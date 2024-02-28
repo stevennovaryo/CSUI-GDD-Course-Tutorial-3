@@ -168,3 +168,8 @@ Mengatasi gerakan melompat dengan menetapkan kecepatan y sesuai dengan direction
 
 Mengamankan kecepatan x dan y sehingga berada dalam batas kecepatan. Batas kecepatan dan kecepatan akhir bisa disesuaikan apakah player sedang *crouching* atau *diving*. Terakhir ada `move_and_slide` untuk menerapkan semua perubahan kecepatannya dan animation handling.
 
+### Reference
+- [Godot Documentation](https://docs.godotengine.org/en/3.6)
+- [CSUI Tutorial 3](https://csui-game-development.github.io/tutorials/tutorial-3/#latihan-implementasi-pergerakan-horizontal-menggunakan-script)
+
+Note: Movement logics and other logics are implemented with the concept that I came up with accordance to Godot documentation. No other tutorials or blogs are referenced.
