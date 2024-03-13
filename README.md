@@ -173,3 +173,63 @@ Mengamankan kecepatan x dan y sehingga berada dalam batas kecepatan. Batas kecep
 - [CSUI Tutorial 3](https://csui-game-development.github.io/tutorials/tutorial-3/#latihan-implementasi-pergerakan-horizontal-menggunakan-script)
 
 Note: Movement logics and other logics are implemented with the concept that I came up with accordance to Godot documentation. No other tutorials or blogs are referenced.
+
+# Tutorial 5 - Asset Creation & Integration
+
+### Deskripsi Fitur 
+
+Pertama-tama, saya menambahkan SFX untuk player dino ketika karakter tersebut melompat.
+
+Untuk melakukan hal tersebut saya cukup membuat `AudioPlayer` dan menambahkan audio tersebut. 
+Kemudian, saya menambahkan script untuk memainkan SFX ketika player menekan tombol UP.
+```gdscript
+	if Input.is_action_just_pressed("ui_up") && can_jump > 0:
+		velocity.y = -jump_speed
+		can_jump -= 1
+		$JumpSfxPlayer.play()
+```
+
+Saya membuat objek lain, yaitu enemies dengan sprite reimu yang akan mengejar player. 
+Untuk melakukan hal tersebut saya menambahkan node `KinematicBody2D` dengan collision dan hurtbox yang dibuat dengan `Area2D`. 
+Pada bagian `_physics_process`-nya saya menambahkan script untuk mendeteksi lokasi player dan bergerak horizontal sesuai dengan arah player.
+Saya juga menambahkan script untuk mengatasi gaya gravitasi, animasi, serta perubahan posisi collision box.
+```gdscript
+func _physics_process(delta):
+	if player != null:
+		if player.is_death:
+			velocity.x = 0
+			$AnimatedSprite.play("sit")
+		elif player.position.x < position.x:
+			velocity.x = velocity.x - speed
+			$AnimatedSprite.flip_h = false;
+			$CollisionShape2D.position.x = -abs($CollisionShape2D.position.x) 
+		elif player.position.x > position.x:
+			velocity.x = velocity.x + speed
+			$AnimatedSprite.flip_h = true;
+			$CollisionShape2D.position.x = abs($CollisionShape2D.position.x) 
+	if is_on_wall():
+		velocity.x *= -1;
+	velocity.x = clamp(velocity.x, -horizontal_maxspeed, horizontal_maxspeed)
+	velocity.y = gravity
+	move_and_slide(velocity, Vector2.UP)
+```
+
+Jika player disentuh oleh enemies tersebut maka player akan mati dan memainkan SFX. 
+Saya juga menambahkan interaksi unik, yang membuat player berganti animasi ketika mati dan berputar hingga menyentuh tanah.
+Agar orientasi player tidak buruk, player akan memiliki orientasi `0` dengan posisi tidur.
+```gdscript
+func _physics_process(delta):
+	if is_death:
+		apply_friction(horizontal_friction / 3)
+		apply_gravity()
+		limit_speed()
+		move_and_slide(velocity, Vector2.UP)
+		if 	$DeathSfxPlayer.playing:
+			animation_sprite.rotate(0.05 * velocity.x / 100)
+		if is_on_floor():
+			animation_sprite.rotation = 0
+		return
+```
+
+Selain itu, terdapat background muxic berupa ambience lab gamedev yang saya record dan background music bawaan dari lab.
+Untuk melakukan hal tersebut saya hanya menambahkan audio player yang memutar otomatis lagu tersebut.

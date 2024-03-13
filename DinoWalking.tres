@@ -59,6 +59,11 @@ animations = [ {
 "name": "Move",
 "speed": 10.0
 }, {
+"frames": [  ],
+"loop": true,
+"name": "New Anim",
+"speed": 5.0
+}, {
 "frames": [ SubResource( 1 ) ],
 "loop": true,
 "name": "default",

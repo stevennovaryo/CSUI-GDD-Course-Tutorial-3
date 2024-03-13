@@ -1,8 +1,18 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://DinoWalking.tres" type="SpriteFrames" id=1]
 [ext_resource path="res://scenes/PlayerDino.gd" type="Script" id=2]
+[ext_resource path="res://scenes/removeCOl.gdshader" type="Shader" id=3]
 [ext_resource path="res://scenes/DinoCollisionHandler.gd" type="Script" id=4]
+[ext_resource path="res://assets/sfx/phaseJump1.ogg" type="AudioStream" id=5]
+[ext_resource path="res://assets/sfx/DIE.ogg" type="AudioStream" id=6]
+
+[sub_resource type="ShaderMaterial" id=2]
+shader = ExtResource( 3 )
+shader_param/color1 = Color( 0.25098, 0.792157, 0.788235, 1 )
+shader_param/color2 = null
+shader_param/color3 = null
+shader_param/precision = 0.05
 
 [sub_resource type="RectangleShape2D" id=1]
 extents = Vector2( 21.5, 19.5 )
@@ -11,10 +21,32 @@ extents = Vector2( 21.5, 19.5 )
 script = ExtResource( 2 )
 
 [node name="AnimatedSprite" type="AnimatedSprite" parent="."]
+material = SubResource( 2 )
 frames = ExtResource( 1 )
+animation = "New Anim"
 playing = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2( 0.5, 2.5 )
 shape = SubResource( 1 )
 script = ExtResource( 4 )
+
+[node name="Camera2D" type="Camera2D" parent="."]
+current = true
+
+[node name="JumpSfxPlayer" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource( 5 )
+
+[node name="HurtBoxPlayer" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="HurtBoxPlayer"]
+polygon = PoolVector2Array( 22, -9, 14, 3, 7, 23, -9, 24, -22, 6, -22, -7, -15, -9, 0, -24, 21, -24 )
+
+[node name="DeathSfxPlayer" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource( 6 )
+volume_db = -10.0
+
+[connection signal="area_entered" from="HurtBoxPlayer" to="." method="_on_HurtBoxPlayer_area_entered"]

@@ -23,6 +23,7 @@ func _ready():
 enum Direction{RIGHT, LEFT, NONE}	
 
 var is_ducking = false
+var is_death = false
 var direction = Direction.NONE
 
 func handle_animation():	
@@ -42,7 +43,39 @@ func handle_animation():
 		else:
 			animation_sprite.play("Move")
 
+func apply_friction(friction):
+	if velocity.x > 0:
+		velocity.x = max(0, velocity.x - (friction + 75 * int(is_ducking)))
+	else:
+		velocity.x = min(0, velocity.x + (friction + 75 * int(is_ducking)))
+
+func apply_gravity():
+	velocity.y += gravity
+
+func limit_speed():
+	if is_ducking && is_on_floor():
+		velocity.x = clamp(velocity.x, -horizontal_maxspeed / 2, horizontal_maxspeed / 2)
+		velocity.y = clamp(velocity.y, max_upward_speed, max_falling_speed)
+	else:
+		velocity.x = clamp(velocity.x, -horizontal_maxspeed, horizontal_maxspeed)
+		velocity.y = clamp(velocity.y, max_upward_speed, max_falling_speed)
+		
+		if is_ducking && !is_on_floor() && direction != Direction.NONE:
+			velocity.x *= 2
+			velocity.y *= 2
+
 func _physics_process(delta):
+	if is_death:
+		apply_friction(horizontal_friction / 3)
+		apply_gravity()
+		limit_speed()
+		move_and_slide(velocity, Vector2.UP)
+		if 	$DeathSfxPlayer.playing:
+			animation_sprite.rotate(0.05 * velocity.x / 100)
+		if is_on_floor():
+			animation_sprite.rotation = 0
+		return
+	
 	direction = Direction.NONE
 	if Input.is_action_pressed('ui_right'):
 		velocity.x += speed
@@ -58,10 +91,7 @@ func _physics_process(delta):
 		is_ducking = false
 		shape.extents = Vector2(20, 20)
 	
-	if velocity.x > 0:
-		velocity.x = max(0, velocity.x - (horizontal_friction + 75 * int(is_ducking)))
-	else:
-		velocity.x = min(0, velocity.x + (horizontal_friction + 75 * int(is_ducking)))
+	apply_friction(horizontal_friction)
 
 	if Input.is_action_just_pressed("ui_select"):
 		if animation_sprite.flip_h:
@@ -80,20 +110,30 @@ func _physics_process(delta):
 	if Input.is_action_just_pressed("ui_up") && can_jump > 0:
 		velocity.y = -jump_speed
 		can_jump -= 1
-
-	velocity.y += gravity
-	
-	if is_ducking && is_on_floor():
-		velocity.x = clamp(velocity.x, -horizontal_maxspeed / 2, horizontal_maxspeed / 2)
-		velocity.y = clamp(velocity.y, max_upward_speed, max_falling_speed)
-	else:
-		velocity.x = clamp(velocity.x, -horizontal_maxspeed, horizontal_maxspeed)
-		velocity.y = clamp(velocity.y, max_upward_speed, max_falling_speed)
+		$JumpSfxPlayer.play()
 		
-		if is_ducking && !is_on_floor() && direction != Direction.NONE:
-			velocity.x *= 2
-			velocity.y *= 2
+	apply_gravity()
+	limit_speed()
 
 	move_and_slide(velocity + dash_velocity, Vector2.UP)
 		
 	handle_animation()
+
+
+func _on_HurtBoxPlayer_area_entered(area : Area2D):
+	is_death = true
+	animation_sprite.flip_v = true
+	animation_sprite.play("Duck")
+	shape.extents = Vector2(25, 3)
+	velocity = -velocity
+	
+	var death_direction
+	if velocity.x <= 0:
+		 death_direction = 1
+	else:
+		death_direction = -1
+		
+	if abs(velocity.x) < 400:
+		velocity.x = 400 * death_direction
+	$DeathSfxPlayer.play()
+	pass # Replace with function body.

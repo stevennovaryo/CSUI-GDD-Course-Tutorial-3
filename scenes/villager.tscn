@@ -1,0 +1,89 @@
+[gd_scene load_steps=15 format=2]
+
+[ext_resource path="res://scenes/VillagerHurtBox.gd" type="Script" id=1]
+[ext_resource path="res://scenes/touhou_reimu_spritesheet.png" type="Texture" id=2]
+[ext_resource path="res://scenes/villagerHandler.gd" type="Script" id=3]
+[ext_resource path="res://scenes/removeCOl.gdshader" type="Shader" id=4]
+
+[sub_resource type="CapsuleShape2D" id=14]
+height = 50.0
+
+[sub_resource type="ShaderMaterial" id=7]
+shader = ExtResource( 4 )
+shader_param/color1 = Color( 0.184314, 0.372549, 0.45098, 1 )
+shader_param/color2 = Color( 0.0980392, 1, 0.133333, 1 )
+shader_param/color3 = Color( 0, 1, 0.0862745, 1 )
+shader_param/precision = 0.1
+
+[sub_resource type="AtlasTexture" id=8]
+flags = 4
+atlas = ExtResource( 2 )
+region = Rect2( 8, 336, 100, 119 )
+
+[sub_resource type="AtlasTexture" id=9]
+flags = 4
+atlas = ExtResource( 2 )
+region = Rect2( 111, 336, 100, 119 )
+
+[sub_resource type="AtlasTexture" id=10]
+flags = 4
+atlas = ExtResource( 2 )
+region = Rect2( 214, 336, 100, 119 )
+
+[sub_resource type="AtlasTexture" id=11]
+flags = 4
+atlas = ExtResource( 2 )
+region = Rect2( 317, 336, 100, 119 )
+
+[sub_resource type="AtlasTexture" id=12]
+flags = 4
+atlas = ExtResource( 2 )
+region = Rect2( 420, 336, 100, 119 )
+
+[sub_resource type="AtlasTexture" id=15]
+flags = 4
+atlas = ExtResource( 2 )
+region = Rect2( 0, 1634, 66, 113 )
+
+[sub_resource type="SpriteFrames" id=3]
+animations = [ {
+"frames": [ SubResource( 8 ), SubResource( 9 ), SubResource( 10 ), SubResource( 11 ), SubResource( 12 ) ],
+"loop": true,
+"name": "default",
+"speed": 15.0
+}, {
+"frames": [ SubResource( 15 ) ],
+"loop": true,
+"name": "sit",
+"speed": 5.0
+} ]
+
+[sub_resource type="CapsuleShape2D" id=5]
+radius = 17.0
+height = 54.0
+
+[node name="Villager" type="KinematicBody2D"]
+script = ExtResource( 3 )
+speed = 500
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2( -11, 22 )
+shape = SubResource( 14 )
+
+[node name="AnimatedSprite" type="AnimatedSprite" parent="."]
+material = SubResource( 7 )
+frames = SubResource( 3 )
+frame = 1
+playing = true
+
+[node name="VillagerHurtBox" type="Area2D" parent="AnimatedSprite"]
+collision_layer = 2
+collision_mask = 0
+monitoring = false
+script = ExtResource( 1 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AnimatedSprite/VillagerHurtBox"]
+position = Vector2( -12, 15 )
+shape = SubResource( 5 )
+
+[connection signal="area_entered" from="AnimatedSprite/VillagerHurtBox" to="AnimatedSprite/VillagerHurtBox" method="_on_VillagerHurtBox_area_entered"]
